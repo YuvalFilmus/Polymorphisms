@@ -11,3 +11,4 @@ The main definitions and results are spread across several files:
 - The basic definitions of symmetric Boolean predicates are found in `SymmetricDefs.lean`.
 - Theorem 1.5 is found in `Symmetric.lean` under the name `symmetric_classification`.
 - The *furthermore* clause of Theorem 1.5 is found in `SymmetricOnlyIf.lean` under the name `nontrivial_if_has_nonconst_counterexample'`.
+- The polymorphisms of NAE are determined in `NAE.lean`, specifically `NAE_polymorphisms`.
