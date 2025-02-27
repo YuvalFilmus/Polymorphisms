@@ -436,7 +436,7 @@ lemma S_comp_closed_nontrivial {S} (hS : is_comp_closed S) :
     app x Px := by
       simp [PredicateB_of_SymmetricB] at Px
       simp [PredicateB_of_SymmetricB]
-      convert (hS _).mp Px
+      convert hS.mp Px
       apply wt_NEG_vec
   }
   constructor

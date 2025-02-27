@@ -527,7 +527,7 @@ lemma comp_comp {m} (w : range (m+1)) :
   omega
 
 def is_comp_closed (S : SymmetricB) :=
-  ∀ w, w ∈ S.W ↔ comp w ∈ S.W
+  ∀ {w}, w ∈ S.W ↔ comp w ∈ S.W
 
 lemma comp_closed {S : SymmetricB}
   (h : ∀ w, w ∈ S.W → comp w ∈ S.W) : is_comp_closed S := by
@@ -573,6 +573,18 @@ lemma wt_NEG_vec {m} (x : range m → range 2) :
       rw [sum_const, card_range]
       simp
   exact Nat.eq_sub_of_add_eq' this
+
+lemma P_iff_wt {S : SymmetricB} {x : range S.m → range 2} :
+  (PredicateB_of_SymmetricB S).P x ↔ wt x ∈ S.W := by
+  simp [PredicateB_of_SymmetricB]
+
+lemma NEG_vec_of_comp_closed {S : SymmetricB} (hcomp : is_comp_closed S)
+  {x} (hx : (PredicateB_of_SymmetricB S).P x) : (PredicateB_of_SymmetricB S).P (NEG_vec x) := by
+  apply P_iff_wt.mpr
+  simp
+  apply hcomp.mp
+  apply P_iff_wt.mp
+  exact hx
 
 -- the various standard symmetric sets
 

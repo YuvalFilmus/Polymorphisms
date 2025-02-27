@@ -5,3 +5,4 @@ import Polymorphisms.ReductionTo1
 import Polymorphisms.ReductionTo2
 import Polymorphisms.Symmetric
 import Polymorphisms.Unanimity
+import Polymorphisms.NAE

@@ -101,9 +101,9 @@ lemma PredicateB_of_Predicate_of_PredicateB (pred : PredicateB) :
 @[ext]
 structure PolymorphismB (pred : PredicateB) (n : ℕ) where
   -- functions
-  fs : (i : range pred.m) → (range n → range 2) → range 2
+  fs : range pred.m → (range n → range 2) → range 2
   -- polymorphicity
-  app (xs : (i : range pred.m) → range n → range 2)
+  app (xs : range pred.m → range n → range 2)
     (sat : ∀ j : range n, pred.P (xs · j)) :
     pred.P (fun i => fs i (xs i))
 
