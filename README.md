@@ -1,6 +1,6 @@
 # Polymorphisms
 
-This project contains a formalizations of my paper [Aggregation of evaluations without unanimity](https://yuvalfilmus.cs.technion.ac.il/publications/papers/?id=1742).
+This project contains a formalization of my paper [Aggregation of evaluations without unanimity](https://yuvalfilmus.cs.technion.ac.il/publications/papers/?id=1742).
 
 The main definitions and results are spread across several files:
 
