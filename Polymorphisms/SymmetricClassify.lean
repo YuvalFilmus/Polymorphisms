@@ -200,16 +200,6 @@ lemma parity_def {P m p hm} (h : P = P_of_S (parity m p hm).denotation) :
     simp [Nat.ModEq]
     exact Nat.odd_iff
 
-lemma atmost_def {P m w b hm hw} (h : P = P_of_S (atmost m w b hm hw).denotation) :
-  P.m = m ∧
-  ∀ x, P.P x ↔ ∀ (I : Finset (range P.m)), #I = w+1 → #{i : I | x i ≠ b} ≠ 0 := by
-  sorry
-
-lemma atmost_m_def {P m w b hm hw} (h : P = P_of_S (atmost m w b hm hw).denotation) :
-  P.m = m ∧
-  ∀ x, P.P x ↔ ∀ (I : Finset (range P.m)), #I = w+2 → #{i : I | x i ≠ b} ≠ 1 := by
-  sorry
-
 lemma odd2_polymorphisms {P} (h : P = P_of_S odd2.denotation)
   {n} (fs : range P.m → (range n → range 2) → range 2) :
   (∃ poly : PolymorphismB P n, poly.fs = fs) ↔

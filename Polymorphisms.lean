@@ -7,3 +7,4 @@ import Polymorphisms.Symmetric
 import Polymorphisms.Unanimity
 import Polymorphisms.NAE
 import Polymorphisms.SymmetricClassify
+import Polymorphisms.SymmetricClassifyDefAtmost
