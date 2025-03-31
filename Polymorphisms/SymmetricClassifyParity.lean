@@ -298,13 +298,116 @@ def flippy {n m} (fs : range m → (range n → range 2) → range 2)
 lemma flippy_if_sensitive_f (p) {n m} (hm : m ≥ 3)
   (fs : range m → (range n → range 2) → range 2) (hfs : parity_poly p fs)
   {i j} (h : sensitive_f (fs i) j) :
-  ∀ i' ≠ i, flippy_f (fs i) j := by
-  sorry
+  ∀ i' ≠ i, flippy_f (fs i') j := by
+  intro i' hi' xi'
+  obtain ⟨xi, hxi⟩ := h
+  let xs (I : range m) (J : range n) : range 2 := complete p hm i' i (xi' J) (xi J) I
+  let ys (I : range m) (J : range n) : range 2 :=
+    if J = j then
+      flip2 (xs · J) i' i I
+    else
+      xs I J
+  have hxs J : Parity (xs · J) = p := by
+    simp [xs]
+    exact (complete_spec p hm hi' (xi' J) (xi J)).2
+  have hys J : Parity (ys · J) = p := by
+    by_cases J = j
+    case pos hJ =>
+      subst hJ
+      simp [ys]
+      apply hxs
+    case neg hJ =>
+      convert hxs J using 1
+      simp [ys, hJ]
+  let fxs i := fs i (xs i)
+  let fys i := fs i (ys i)
+  have hfxs : Parity fxs = p := hfs xs hxs
+  have hfys : Parity fys = p := hfs ys hys
+  by_contra! hxi'
+  replace hxi' := NEG_of_ne hxi'
+  simp at hxi'
+  suffices Parity fys = NEG p by
+    rw [hfys] at this
+    apply NEG_ne p this
+  suffices fys = flip fxs i by
+    rw [this]
+    simp
+    rw [hfxs]
+  funext I
+  by_cases I = i
+  case pos hI =>
+    symm at hI
+    subst hI
+    have hx : xs i = xi := by
+      simp [xs]
+      funext J
+      exact (complete_spec p hm hi' (xi' J) (xi J)).1.2
+    have hyx : ys i = flip (xs i) j := by
+      simp [xs, ys]
+      funext J
+      by_cases J = j
+      case pos hJ =>
+        subst hJ
+        simp [flip2, flip, hi'.symm]
+      case neg hJ =>
+        simp [hJ, flip]
+    simp [fxs, fys]
+    rw [hyx, hx, hxi, flip]
+    simp [hx]
+  case neg hIi =>
+  by_cases I = i'
+  case pos hI =>
+    symm at hI
+    subst hI
+    have hx : xs i' = xi' := by
+      simp [xs]
+      funext J
+      exact (complete_spec p hm hi' (xi' J) (xi J)).1.1
+    have hyx : ys i' = flip (xs i') j := by
+      simp [xs, ys]
+      funext J
+      by_cases J = j
+      case pos hJ =>
+        subst hJ
+        simp [flip2, flip, hi']
+      case neg hJ =>
+        simp [hJ, flip]
+    simp [fxs, fys]
+    rw [hyx, hx, hxi', flip]
+    simp [hx, hi']
+  case neg hIi' =>
+    have : ys I = xs I := by
+      simp [xs, ys]
+      funext J
+      by_cases J = j
+      case pos hJ =>
+        subst hJ
+        simp [flip2, flip, hIi, hIi']
+      case neg hJ =>
+        simp [hJ]
+    simp [fys, fxs, flip, hIi, this]
 
 lemma flippy_if_sensitive (p) {n m} (hm : m ≥ 3)
   (fs : range m → (range n → range 2) → range 2) (hfs : parity_poly p fs)
   {j} (h : sensitive fs j) : flippy fs j := by
-  sorry
+  obtain ⟨i, hi⟩ := h
+  intro i'
+  by_cases i' = i
+  case pos hi' =>
+    symm at hi'
+    subst hi'
+    let i' := other_ix hm i i
+    have hi' := (other_ix_spec hm i i).1
+    have : flippy_f (fs i') j := by
+      apply flippy_if_sensitive_f <;> assumption
+    have : sensitive_f (fs i') j := by
+      use (fun _ => b0)
+      apply this
+    apply flippy_if_sensitive_f p hm fs hfs this
+    symm
+    assumption
+  case neg hi' =>
+    apply flippy_if_sensitive_f <;> assumption
 
 noncomputable def sensitiveJ {n m} (fs : range m → (range n → range 2) → range 2) : Finset (range n) :=
   {j | sensitive fs j}
