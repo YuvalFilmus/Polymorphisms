@@ -27,7 +27,7 @@ lemma AND_def {n} {J : Finset (range n)} {b : range 2} {x : range n → range 2}
 
 def CONST {n} (b : range 2) (_ : range n → range 2) : range 2 := b
 
-lemma parity_polymorphisms_if_AND {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
+lemma atmost_m_polymorphisms_if_AND {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
   {n} (J : Finset (range n)) :
   ∃ poly : PolymorphismB P n, ∀ i, poly.fs i = AND J b := by
   obtain ⟨Pm, PP⟩ := atmost_m_def h
@@ -80,7 +80,7 @@ lemma parity_polymorphisms_if_AND {P m w b hm hw} (h : P = P_of_S (atmost_m m w 
   intro i
   simp
 
-lemma parity_polymorphisms_if_cert {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
+lemma atmost_m_polymorphisms_if_cert {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
   {n} {fs : range P.m → (range n → range 2) → range 2}
   {I : Finset (range P.m)} (sI : #I = m - w) (hI : ∀ i ∈ I, fs i = CONST (NEG b)) :
   ∃ poly : PolymorphismB P n, poly.fs = fs := by
@@ -140,7 +140,7 @@ lemma parity_polymorphisms_if_cert {P m w b hm hw} (h : P = P_of_S (atmost_m m w
       exact (ReductionTo1.neg₂_dichotomy rfl).mpr rfl
   }
 
-lemma parity_polymorphisms_only_if_nonconst {m n w : ℕ} {b : range 2} (hw : w ≥ 1)
+lemma atmost_m_polymorphisms_only_if_nonconst {m n w : ℕ} {b : range 2} (hw : w ≥ 1)
   {I : Finset (range m)} (hI : #I = w + 2)
   {fs : I → (range n → range 2) → range 2}
   (hfs : ∀ ⦃xs : I → range n → range 2⦄,
@@ -149,7 +149,7 @@ lemma parity_polymorphisms_only_if_nonconst {m n w : ℕ} {b : range 2} (hw : w 
   ∃ (J : Finset (range n)), ∀ i : I, fs i = AND J b := by
   sorry
 
-lemma parity_polymorphisms_only_if'' {m n w : ℕ} {b : range 2} (hw : w ≥ 1)
+lemma atmost_m_polymorphisms_only_if'' {m n w : ℕ} {b : range 2} (hw : w ≥ 1)
   {I : Finset (range m)} (hI : #I = w + 2)
   {fs : I → (range n → range 2) → range 2}
   (hfs : ∀ ⦃xs : I → range n → range 2⦄,
@@ -242,7 +242,7 @@ lemma parity_polymorphisms_only_if'' {m n w : ℕ} {b : range 2} (hw : w ≥ 1)
   case neg h =>
     left
     push_neg at h
-    apply parity_polymorphisms_only_if_nonconst hw hI hfs
+    apply atmost_m_polymorphisms_only_if_nonconst hw hI hfs
     intro i
     replace h := h i
     contrapose! h
@@ -251,7 +251,9 @@ lemma parity_polymorphisms_only_if'' {m n w : ℕ} {b : range 2} (hw : w ≥ 1)
     apply NEG_of_ne
     apply h
 
-lemma parity_polymorphisms_only_if' {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
+-- TODO: Prove another version of atmost_m_def which counts the number of entries equal to b
+-- use this to complete the proof
+lemma atmost_m_polymorphisms_only_if' {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
   {n} (poly : PolymorphismB P n) {I : Finset (range P.m)} (hI : #I = w+2) :
   (∃ (J : Finset (range n)), ∀ i ∈ I, poly.fs i = AND J b) ∨
   (∃ (K : Finset I), #K = 2 ∧ ∀ i ∈ K, poly.fs i = CONST (NEG b)) := by
@@ -267,11 +269,10 @@ lemma parity_polymorphisms_only_if' {P m w b hm hw} (h : P = P_of_S (atmost_m m 
         if ∀ k : I, xs k j = b then b else NEG b
     have sat j : P.P (ys · j) := by
       replace hxs := hxs j
-      apply (PP _).mpr
-      intro I' sI'
       by_cases ∀ k : I, xs k j = b
       case pos hall =>
         simp [ys, hall]
+        sorry
       case neg hall =>
         have hall' :
           ¬ ∀ (a : ℕ) (ha : a < P.m) (haI : ⟨a, mem_range.mpr ha⟩ ∈ I),
@@ -282,59 +283,10 @@ lemma parity_polymorphisms_only_if' {P m w b hm hw} (h : P = P_of_S (atmost_m m 
           apply mem_range.mp
           simp
         simp [ys, hall']
-        by_contra! h
-        obtain ⟨a, ha⟩ := card_eq_one.mp h
-        obtain ⟨ha₁, ha₂⟩ := eq_singleton_iff_unique_mem.mp ha
-        replace ha₂ {i : I'} (hi : i.val ∉ I) : i = a := by
-          apply ha₂
-          simp [hi]
-          push_neg; symm
-          apply NEG_ne
-        by_cases I = I'
-        case pos hI' =>
-          subst hI'
-          apply hxs
-          convert h with i
-          simp
-        case neg hI' =>
-          let D : Finset I' := { i | i.val ∉ I }
-          have : #D > 0 := by
-            by_contra! h
-            -- otherwise, I' = I
-            sorry
-          have : #D < 2 := by
-            by_contra! h
-            -- due to ha₂
-            sorry
-          have : #D = 1 := by omega
-          obtain ⟨d, hd⟩ := card_eq_one.mp this
-          obtain ⟨hd₁, hd₂⟩ := eq_singleton_iff_unique_mem.mp hd
-          let E : Finset I := { i | i.val ∉ I' }
-          have : #E = 1 := by
-            -- since I\I' = I'\I
-            sorry
-          obtain ⟨e, he⟩ := card_eq_one.mp this
-          apply hxs
-          apply card_eq_one.mpr
-          use e
-          apply eq_singleton_iff_unique_mem.mpr
-          constructor
-          · simp
-            by_contra! he'
-            apply hall
-            intro k
-            by_cases k = e
-            case pos h =>
-              subst h
-              assumption
-            case neg h =>
-              sorry
-          · intro e' he'
-            simp at he'
-            sorry
+        sorry
     convert (PP _).mp (poly.app ys sat) I hI with i
     simp [ys]
-  convert parity_polymorphisms_only_if'' hw hI hfs with J
+  convert atmost_m_polymorphisms_only_if'' hw hI hfs with J
   constructor
   · intro h i
     apply h
@@ -377,7 +329,7 @@ lemma AND_eq_AND {n} (b : range 2) (J J' : Finset (range n)) (h : AND J b = AND 
     simp [x, (NEG_ne b).symm] at this
     exact this
 
-lemma parity_polymorphisms_only_if {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
+lemma atmost_m_polymorphisms_only_if {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
   {n} (poly : PolymorphismB P n) :
   (∃ (J : Finset (range n)), ∀ i, poly.fs i = AND J b) ∨
   (∃ (I : Finset (range P.m)), #I = m - w ∧ ∀ i ∈ I, poly.fs i = CONST (NEG b)) := by
@@ -411,7 +363,7 @@ lemma parity_polymorphisms_only_if {P m w b hm hw} (h : P = P_of_S (atmost_m m w
       have : #(insert i₀ Ic') = w + 2 := by
         rw [card_insert_of_not_mem, sIc']
         exact hi₀
-      cases parity_polymorphisms_only_if' h poly this
+      cases atmost_m_polymorphisms_only_if' h poly this
       case inl hAND =>
         exact hAND
       case inr hCERT =>
@@ -486,7 +438,7 @@ lemma parity_polymorphisms_only_if {P m w b hm hw} (h : P = P_of_S (atmost_m m w
       apply hJ'
       simp [mem_insert]
 
-lemma parity_polymorphisms {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
+lemma atmost_m_polymorphisms {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation)
   {n} (fs : range P.m → (range n → range 2) → range 2) :
   (∃ poly : PolymorphismB P n, poly.fs = fs) ↔
   (∃ (J : Finset (range n)), ∀ i, fs i = AND J b) ∨
@@ -498,19 +450,19 @@ lemma parity_polymorphisms {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw
   constructor
   case mp =>
     rintro ⟨poly, hpoly⟩
-    convert parity_polymorphisms_only_if h poly
+    convert atmost_m_polymorphisms_only_if h poly
     repeat exact hpoly.symm
   case mpr =>
     rintro h
     cases h
     case inl h =>
       obtain ⟨J, hJ⟩ := h
-      obtain ⟨poly, hpoly⟩ := parity_polymorphisms_if_AND h J
+      obtain ⟨poly, hpoly⟩ := atmost_m_polymorphisms_if_AND h J
       use poly
       funext i
       rw [hJ i, hpoly i]
     case inr h =>
       obtain ⟨I, sI, hI⟩ := h
-      apply parity_polymorphisms_if_cert h sI hI
+      apply atmost_m_polymorphisms_if_cert h sI hI
 
 end NontrivialType
