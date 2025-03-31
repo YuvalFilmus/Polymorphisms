@@ -170,6 +170,45 @@ lemma Parity_flip {m} (x : range m → range 2) (i₀ : range m) :
     _ = (Parity x + 1) % 2 := by
       simp [Parity]
 
+@[simp]
+lemma XOR_flip_notin {m : ℕ} (J : Finset (range m)) (b : range 2) (j₀) (h : j₀ ∉ J) (x) :
+  XOR J b (flip x j₀) = XOR J b x := by
+  simp [XOR]
+  congr 2
+  apply sum_congr rfl
+  intro j hj
+  have : j ≠ j₀ := by
+    contrapose! h
+    subst h
+    assumption
+  simp [flip, this]
+
+@[simp]
+lemma XOR_flip_in {m : ℕ} (J : Finset (range m)) (b : range 2) (j₀) (h : j₀ ∈ J) (x) :
+  XOR J b (flip x j₀) = NEG (XOR J b x) := by
+  rw [NEG_add1]
+  apply Subtype.coe_eq_of_eq_mk
+  calc
+    XOR J b (flip x j₀) = (∑ j ∈ J, (flip x j₀ j).val + b) % 2 := by
+      simp [XOR]
+    _ = (∑ j ∈ J.erase j₀, (flip x j₀ j).val + (flip x j₀ j₀).val + b) % 2 := by
+      rw [sum_erase_add]
+      exact h
+    _ = (∑ j ∈ J.erase j₀, (x j).val + NEG (x j₀) + b) % 2 := by
+      congr 2
+      simp [flip]
+      apply sum_congr rfl
+      intro j hj
+      simp [mem_erase.mp hj]
+    _ = (∑ j ∈ J.erase j₀, (x j).val + x j₀ + b + 1) % 2 := by
+      simp [NEG_add1]
+      omega
+    _ = (∑ j ∈ J, (x j).val + b + 1) % 2 := by
+      rw [sum_erase_add]
+      exact h
+    _ = (XOR J b x + 1) % 2 := by
+      simp [XOR]
+
 def flip2 {m} (x : range m → range 2) (i₀ i₁ : range m) :=
   flip (flip x i₀) i₁
 
@@ -412,17 +451,146 @@ lemma flippy_if_sensitive (p) {n m} (hm : m ≥ 3)
 noncomputable def sensitiveJ {n m} (fs : range m → (range n → range 2) → range 2) : Finset (range n) :=
   {j | sensitive fs j}
 
+def char_fun {n} (S : Finset (range n)) (j : range n) : range 2 :=
+  if j ∈ S then b1 else b0
+
 lemma parity_poly_formula (p) {n m} (hm : m ≥ 3)
   (fs : range m → (range n → range 2) → range 2) (hfs : parity_poly p fs)
   (i : range m) : fs i = XOR (sensitiveJ fs) (fs i (fun _ => b0)) := by
-  sorry
+  let b := fs i (fun _ => b0)
+  suffices ∀ (S : Finset (range n)), fs i (char_fun S) = XOR (sensitiveJ fs) b (char_fun S) by
+    funext x
+    let S : Finset (range n) := {j | x j = b1 }
+    have hS : x = char_fun S := by
+      funext j
+      simp [char_fun, S]
+      cases of_range_2B (x j)
+      case inl h => simp [h, b0, b1]
+      case inr h => simp [h]
+    rw [hS]
+    apply this
+  intro S
+  induction S using Finset.induction
+  case empty =>
+    have hempty : char_fun ∅ = (fun _ => b0 : range n → range 2) := by
+      funext j
+      simp [char_fun]
+    simp [hempty, XOR, b0, b]
+    apply Subtype.coe_eq_of_eq_mk
+    refine Eq.symm (Nat.mod_eq_of_lt ?_)
+    apply mem_range.mp
+    apply coe_mem
+  case insert j T hj hT =>
+    have hinsert : char_fun (insert j T) = flip (char_fun T) j := by
+      funext J
+      simp [char_fun, flip]
+      by_cases J = j
+      case pos hJ =>
+        subst hJ
+        simp [hj, NEG]
+      case neg hJ =>
+        simp [hJ]
+    rw [hinsert]
+    by_cases j ∈ sensitiveJ fs
+    case pos hjs =>
+      have hjs' : flippy fs j := by
+        apply flippy_if_sensitive p hm fs hfs
+        simp [sensitiveJ] at hjs
+        exact hjs
+      rw [hjs' i (char_fun T), hT]
+      rw [XOR_flip_in]
+      exact hjs
+    case neg hjs =>
+      rw [XOR_flip_notin]
+      case h => exact hjs
+      rw [←hT]
+      symm
+      contrapose! hjs
+      replace hjs := NEG_of_ne hjs
+      simp [sensitiveJ]
+      use i, char_fun T
+      simp [hjs]
 
 lemma parity_polymorphisms_only_if' (p) {n m} (hm : m ≥ 3)
   (fs : range m → (range n → range 2) → range 2) (hfs : parity_poly p fs) :
   ∃ J, ∃ (b : range m → range 2),
     ∑ i : range m, (b i).val ≡ (#J + 1) * p [MOD 2] ∧
     ∀ (i : range m), fs i = XOR J (b i) := by
-  sorry
+  use sensitiveJ fs
+  use fun i ↦ fs i (fun _ => b0)
+  have h i := parity_poly_formula p hm fs hfs i
+  constructor
+  case right => exact h
+  case left =>
+    let xs (i : range m) (j : range n) := if i.val = 0 then p else b0
+    have hxs j : Parity (xs · j) = p := by
+      simp [xs, Parity]
+      apply Subtype.coe_eq_of_eq_mk
+      simp
+      have : AtLeast3 m := ⟨hm⟩
+      calc
+        (∑ i : range m, (if i.val = 0 then p else b0).val) % 2 =
+        (∑ i ∈ (range m).attach.erase range_0, 0 + p) % 2 := by
+          congr
+          simp
+          have : range_0 ∈ (range m).attach := by simp
+          rw [←sum_erase_add _ _ this]
+          simp [range_0, b0]
+          intro i hi hi'
+          simp [hi']
+        _ = p % 2 := by
+          congr
+          rw [sum_eq_zero, zero_add]
+          intro i hi; rfl
+        _ = p := by
+          have := mem_range.mp p.property
+          omega
+    have hp := hfs xs hxs
+    simp [Parity] at hp
+    replace hp := congrArg (fun x => x.val) hp
+    simp at hp
+    have : AtLeast3 m := ⟨hm⟩
+    replace hp := calc
+      p = (∑ i ∈ (range m).attach, (fs i (xs i)).val) % 2 := by
+        rw [hp]
+      _ = (∑ i ∈ (range m).attach.erase range_0, (fs i (xs i)).val + (fs range_0 (xs range_0)).val) % 2 := by
+        rw [sum_erase_add]
+        simp
+      _ = (∑ i ∈ (range m).attach.erase range_0, (fs i (fun _ ↦ b0)).val + (fs range_0 (fun _ ↦ p)).val) % 2 := by
+        simp [xs, range_0]
+        congr 2
+        apply sum_congr rfl
+        intro i hi
+        congr
+        funext j
+        have : i.val ≠ 0 := by
+          have := (mem_erase.mp hi).left
+          contrapose! this
+          apply Subtype.coe_eq_of_eq_mk
+          exact this
+        simp [this]
+    have : fs range_0 (fun x ↦ p) = (fs range_0 (fun x ↦ b0) + #(sensitiveJ fs) * p) % 2 := by
+      rw [h range_0, XOR, XOR]
+      simp
+      congr 1
+      simp [b0, add_comm]
+    rw [this] at hp
+    norm_num at hp
+    rw [←add_assoc, sum_erase_add] at hp
+    case h => simp
+    simp [Nat.ModEq]
+    calc
+      (∑ i : range m, (fs i (fun _ ↦ b0)).val) % 2 =
+      (∑ i : range m, (fs i (fun _ ↦ b0)).val + 2*(#(sensitiveJ fs)*p)) % 2 := by
+        omega
+      _ = (∑ i : range m, (fs i (fun _ ↦ b0)).val + #(sensitiveJ fs)*p + #(sensitiveJ fs)*p) % 2 := by
+        omega
+      _ = (p + #(sensitiveJ fs)*p) % 2 := by
+        nth_rewrite 3 [hp]
+        norm_num
+      _ = (#(sensitiveJ fs) + 1) * p % 2 := by
+        congr
+        ring
 
 lemma parity_polymorphisms_only_if {P m p hm} (h : P = P_of_S (parity m p hm).denotation)
   {n} (poly : PolymorphismB P n) :
