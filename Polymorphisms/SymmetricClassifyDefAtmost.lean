@@ -256,4 +256,72 @@ lemma atmost_m_def {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denota
   simp [NEG_vec, NEG, b0, b1]
   rfl
 
+lemma atmost_def_1' {P m w hm hw} (h : P = P_of_S (atmost m w b1 hm hw).denotation) :
+  P.m = m ∧
+  ∀ x, P.P x ↔ #{i | x i = b1} ≤ w := by
+  subst h
+  simp [denotation, P_of_S, PredicateB_of_SymmetricB, S_atmost, b1]
+  intro x
+  rw [wt_set]
+  simp [b1]
+
+lemma atmost_def' {P m w b hm hw} (h : P = P_of_S (atmost m w b hm hw).denotation) :
+  P.m = m ∧
+  ∀ x, P.P x ↔ #{i | x i = b} ≤ w := by
+  cases of_range_2B b
+  case inr hb =>
+    subst hb
+    apply atmost_def_1' <;> assumption
+  case inl hb =>
+  subst hb
+  subst h
+  simp [P_of_S, PredicateB_of_SymmetricB, denotation, b0]
+  constructor
+  simp [S_atleast]
+  intro x
+  rw [wt_complement]
+  have : wt (NEG_vec x) ∈ (@S_atleast m (m-w) (by omega) (by omega)).complement.W ↔ wt (NEG_vec x) ∈ (@S_atmost m w (by omega) (by omega)).W := by
+      constructor
+      all_goals (intro h; convert h; simp; congr; omega; simp; congr; omega)
+  rw [this]
+  have := (@atmost_def_1' (P_of_S (@S_atmost m w (by omega) (by omega))) m w (by omega) (by omega) rfl).right (NEG_vec x)
+  simp only [P_of_S, PredicateB_of_SymmetricB] at this
+  rw [this]
+  simp [NEG_vec, NEG, b0, b1]
+  rfl
+
+lemma atmost_m_def_1' {P m w hm hw} (h : P = P_of_S (atmost_m m w b1 hm hw).denotation) :
+  P.m = m ∧
+  ∀ x, P.P x ↔ #{i | x i = b1} ≤ w ∨ #{i | x i = b1} = m := by
+  subst h
+  simp [denotation, P_of_S, PredicateB_of_SymmetricB, S_atmost_m, b1]
+  intro x
+  rw [wt_set]
+  simp [b1]
+
+lemma atmost_m_def' {P m w b hm hw} (h : P = P_of_S (atmost_m m w b hm hw).denotation) :
+  P.m = m ∧
+  ∀ x, P.P x ↔ #{i | x i = b} ≤ w ∨ #{i | x i = b} = m := by
+  cases of_range_2B b
+  case inr hb =>
+    subst hb
+    apply atmost_m_def_1' <;> assumption
+  case inl hb =>
+  subst hb
+  subst h
+  simp [P_of_S, PredicateB_of_SymmetricB, denotation, b0]
+  constructor
+  simp [S_atleast_0]
+  intro x
+  rw [wt_complement]
+  have : wt (NEG_vec x) ∈ (@S_atleast_0 m (m-w) (by omega) (by omega)).complement.W ↔ wt (NEG_vec x) ∈ (@S_atmost_m m w (by omega)).W := by
+      constructor
+      all_goals (intro h; convert h; simp; congr; omega; simp; congr; omega)
+  rw [this]
+  have := (@atmost_m_def_1' (P_of_S (@S_atmost_m m w (by omega))) m w (by omega) (by omega) rfl).right (NEG_vec x)
+  simp only [P_of_S, PredicateB_of_SymmetricB] at this
+  rw [this]
+  simp [NEG_vec, NEG, b0, b1]
+  rfl
+
 end NontrivialType
