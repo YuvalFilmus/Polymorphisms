@@ -10,3 +10,4 @@ import Polymorphisms.SymmetricClassify
 import Polymorphisms.SymmetricClassifyParity
 import Polymorphisms.SymmetricClassifyAtmost
 import Polymorphisms.SymmetricClassifyAtmost_m
+import Polymorphisms.SymmetricClassifyTrivial

@@ -1,6 +1,6 @@
 -- polymorphisms of NAE (includes Arrow's theorem for three candidates as a special case)
 
-import Polymorphisms.SymmetricClassification
+import Polymorphisms.SymmetricClassifyTrivialA
 open Finset
 
 def NAE {m : ℕ} (hm : m ≥ 3) : SymmetricB := {

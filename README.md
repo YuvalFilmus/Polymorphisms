@@ -17,5 +17,5 @@ The main definitions and results are spread across several files:
 - Theorem 1.6(3) is found in `SymmetricClassifyParity.lean` under the name `parity_polymorphisms`.
 - Theorem 1.6(4) is found in `SymmetricClassifyAtmost.lean` under the name `atmost_polymorphisms`.
 - Theorem 1.6(5) is found in `SymmetricClassifyAtmost_m.lean` under the name `atmost_m_polymorphisms`.
-- Theorem 1.6(6) is found in `SymmetricClassification.lean` under the names `symmetric_polymorphisms_comp_closed` and `symmetric_polymorphisms_not_comp_closed`.
+- Theorem 1.6(6) is found in `SymmetricClassifyTrivial.lean` under the names `trivial_complement_closed_polymorphisms` and `trivial_not_complement_closed_polymorphisms`.
 - Theorem 1.7 is found in `Unanimity.lean` under the name `trivial_iff_impossibility`.
