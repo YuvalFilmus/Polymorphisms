@@ -33,6 +33,8 @@ def denotation
   else
     @S_atleast_0 m (m-w) (by omega) (by omega)
 
+def denotationP (nt : NontrivialType) := P_of_S nt.denotation
+
 lemma nontrivial_denotation (S : SymmetricB)
   (hS : is_nontrivial_S S) :
   ∃ nt, denotation nt = S := by
