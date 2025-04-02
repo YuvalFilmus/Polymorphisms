@@ -12,3 +12,10 @@ The main definitions and results are spread across several files:
 - Theorem 1.5 is found in `Symmetric.lean` under the name `symmetric_classification`.
 - The *furthermore* clause of Theorem 1.5 is found in `SymmetricOnlyIf.lean` under the name `nontrivial_if_has_nonconst_counterexample'`.
 - The polymorphisms of NAE are determined in `NAE.lean`, specifically `NAE_polymorphisms`.
+- Theorem 1.6(1) is found in `SymmetricClassify.lean` under the name `odd2_polymorphisms`.
+- Theorem 1.6(2) is found in `SymmetricClassify.lean` under the name `equal_polymorphisms`.
+- Theorem 1.6(3) is found in `SymmetricClassifyParity.lean` under the name `parity_polymorphisms`.
+- Theorem 1.6(4) is found in `SymmetricClassifyAtmost.lean` under the name `atmost_polymorphisms`.
+- Theorem 1.6(5) is found in `SymmetricClassifyAtmost_m.lean` under the name `atmost_m_polymorphisms`.
+- Theorem 1.6(6) is found in `SymmetricClassification.lean` under the names `symmetric_polymorphisms_comp_closed` and `symmetric_polymorphisms_not_comp_closed`.
+- Theorem 1.7 is found in `Unanimity.lean` under the name `trivial_iff_impossibility`.
