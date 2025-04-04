@@ -317,7 +317,6 @@ lemma dummy_different (a : ℕ) [AtLeast2 a] : @dummy₀ a ≠ dummy₁ := by
   by_contra h
   have : @dummy₀ a 1 ≠ dummy₁ 1 := by
     simp [dummy₀, dummy₁]
-    exact ne_of_beq_false rfl
   apply this
   rw [h]
 
@@ -326,14 +325,12 @@ lemma dummy₀_ne_const {a : ℕ} [AtLeast2 a] (τ : range a) : dummy₀ ≠ fun
     contrapose! h
     rw [h]
   simp [dummy₀]
-  exact ne_of_beq_false rfl
 
 lemma dummy₁_ne_const {a : ℕ} [AtLeast2 a] (τ : range a) : dummy₁ ≠ fun _ => τ := by
   suffices h : dummy₁ 0 ≠ dummy₁ 1 by
     contrapose! h
     rw [h]
   simp [dummy₁]
-  exact ne_of_beq_false rfl
 
 noncomputable def g'_func (poly : Polymorphism pred (n+1)) (i : range pred.m)
   (σ : range (pred.a i)) : (range (pred.a i) → range (pred.a i)) :=
@@ -530,8 +527,6 @@ lemma g_dictator_1_nonconst [AtLeast1 n] {poly : Polymorphism pred (n+1)} {i : r
         have hg'_1 := hg' 1
         simp [g'_func, hnone 0, hempty] at hg'_0
         simp [g'_func, hnone 1, hempty] at hg'_1
-        split at hg'_1
-        case isTrue h => reduce at h; simp at h
         rw [hg'_0, hg'_1]
   apply f_of_h_nonconst hφ hh
 
@@ -893,8 +888,6 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
       simp [hj] at hχ
       simp [hj, hz₁] at χ₁₁
       simp [hj, hz₂] at χ₁₂
-      reduce at χ₁₁
-      reduce at χ₁₂
       apply hσ₁σ₂
       rw [χ₁₁, χ₁₂]
     case inr hj =>
@@ -906,13 +899,9 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
       by_cases h : φ i₀ (y₀ i₀) = φ i₀ σ₁
       · apply hσ₁σ₂
         rw [h] at χ₀₂
-        reduce at χ₁₂
         rw [χ₀₂, χ₁₂]
-        reduce; rfl
       · apply h
-        reduce at χ₁₁
         rw [χ₀₁, χ₁₁]
-        reduce; rfl
   case inr hχ =>
     rcases hχ with ⟨c, hc⟩
     use c
@@ -931,7 +920,6 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
       have χ₂ := hc i (cons_input' (y₁ i) (z₂ i))
       simp [χ, cons_input', hnonconst', A₀_nonfull ⟨i, hnonconst'⟩, hz₁] at χ₁
       simp [χ, cons_input', hnonconst', A₀_nonfull ⟨i, hnonconst'⟩, hz₂] at χ₂
-      reduce at χ₁ χ₂
       rw [χ₁, χ₂]
     convert g_dictator_1_const hconst (hdict i)
     rw [←hc i (cons_input' (y₀ i) (y₀ i))]

@@ -111,6 +111,18 @@ instance {n} [AtLeast2 n] : OfNat (range n) 1 :=
 instance {n} [AtLeast3 n] : OfNat (range n) 2 :=
   ⟨range_2⟩
 
+@[simp]
+lemma zero_neq_one {n} [AtLeast2 n] : (0 : range n) ≠ (1 : range n) := by
+  intro h
+  reduce at h
+  simp at h
+
+@[simp]
+lemma one_ne_zero'' {n} [AtLeast2 n] : (1 : range n) ≠ (0 : range n) := by
+  intro h
+  reduce at h
+  simp at h
+
 def cons_input {a : ℕ} (σ₀ σ₁ : range a) (k : range 2) :=
   if k = range_0 then σ₀ else σ₁
 
@@ -164,7 +176,7 @@ lemma cons_input_of_components' {a : ℕ}
   cases of_range_2'' k
   all_goals simp [cons_input']
   case inl h => rw [h]; simp
-  case inr h => rw [h]; simp; aesop
+  case inr h => rw [h]; simp
 
 lemma dom_nonempty {pred : Predicate} (c : Certificate pred) :
   ∃ i, i ∈ c.dom := by
