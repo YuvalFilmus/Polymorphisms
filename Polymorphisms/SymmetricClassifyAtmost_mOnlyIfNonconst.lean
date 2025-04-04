@@ -74,21 +74,13 @@ lemma exists_intersection_subset {m n : ℕ}
         case pos hi =>
           subst hi
           unfold xs
-          conv => enter [1, 1]; simp
-          conv => arg 1; rw [ite_true]
-          apply mem_filter.mpr
-          constructor; simp
-          assumption
-      conv => enter [1, 1, 1, i]; simp [this i]
-      simp
+          simp [-Subtype.forall]
+          exact h
+      simp [-Subtype.forall, this]
     case neg h =>
       have hi₂ : j ∉ xs i₂ := by
-        unfold xs
-        conv => enter [1, 1, 1]; simp
-        conv => enter [1, 1]; rw [ite_true]
-        contrapose! h
-        rw [mem_filter] at h
-        exact h.right
+        simp [-Subtype.forall, -not_forall, xs]
+        exact h
       push_neg at h
       obtain ⟨i, hii₂, hi⟩ := h
       suffices 2 ≤ #(filter (fun i ↦ j ∉ xs i) univ) by omega
@@ -121,10 +113,7 @@ lemma exists_intersection_subset {m n : ℕ}
       simp [hi, hi']
       apply hxfsb
   · intro j hj
-    unfold xs at hj
-    conv at hj => enter [1, 1]; simp
-    conv at hj => arg 1; rw [ite_true]
-    replace hj := (mem_filter.mp hj).right
+    simp [-Subtype.forall, xs] at hj
     simp
     constructor
     · convert hj i₀ hi₀i₂

@@ -240,15 +240,10 @@ lemma atmost_m_polymorphisms_only_if {P m w b hm hw} (h : P = P_of_S (atmost_m m
   case neg hI =>
     left
     simp at hI
-    have : #(univ \ I) > w := by
-      rw [card_sdiff]
-      conv =>
-        lhs
-        arg 1
-        simp [Pm]
+    have : #Iᶜ > w := by
+      rw [card_compl]
+      simp
       omega
-      · intro i hi
-        simp
     obtain ⟨Ic', hIc', sIc'⟩ := extract_subset this
     have hIc' {i₀} (hi₀ : i₀ ∉ Ic') :
       ∃ J, ∀ i ∈ insert i₀ Ic', poly.fs i = AND' J b := by
@@ -289,7 +284,7 @@ lemma atmost_m_polymorphisms_only_if {P m w b hm hw} (h : P = P_of_S (atmost_m m
         apply hi₃Ic
         apply mem_filter.mpr
         simpa
-    have : (univ \ Ic').Nonempty := by
+    have : Ic'ᶜ.Nonempty := by
       apply sdiff_nonempty.mpr
       by_contra! h
       have := card_le_card h

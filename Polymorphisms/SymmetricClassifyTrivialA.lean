@@ -11,10 +11,7 @@ lemma symmetric_polymorphisms_only_if_dict {S : SymmetricB}
   use {
     fs := fs
     app xs sat := by
-      conv =>
-        arg 2
-        ext i
-        rw [hfs i]
+      simp [hfs]
       exact sat j
   }
 
@@ -39,10 +36,7 @@ lemma symmetric_polymorphisms_only_if_comp_closed {S : SymmetricB} (hcomp : is_c
   use {
     fs := fs
     app xs sat := by
-      conv =>
-        arg 2
-        ext i
-        rw [hfs i]
+      simp [hfs]
       have := NEG_vec_of_comp_closed hcomp (sat j)
       simp [NEG_vec] at this
       exact this

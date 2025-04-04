@@ -29,7 +29,7 @@ lemma atmost_polymorphisms {P m w b hm hw} (h : P = P_of_S (atmost m w b hm hw).
       case pos hJI =>
         subst hJI
         obtain ⟨i, hiJ, hi⟩ := hxs j
-        apply @card_ne_zero_of_mem _ _ ⟨i, hiJ⟩ ?_
+        apply card_ne_zero_of_mem (a := ⟨i, hiJ⟩)
         simpa [ys]
       case neg hJI =>
         have : ∃ i ∈ J, i ∉ I := by
@@ -39,7 +39,7 @@ lemma atmost_polymorphisms {P m w b hm hw} (h : P = P_of_S (atmost m w b hm hw).
           apply eq_of_subset_of_card_le h
           rw [hI, hJ]
         obtain ⟨i, hiJ, hi⟩ := this
-        apply @card_ne_zero_of_mem _ _ ⟨i, hiJ⟩ ?_
+        apply card_ne_zero_of_mem (a := ⟨i, hiJ⟩)
         simp [ys, hi]
         exact (ReductionTo1.neg₂_dichotomy rfl).mpr rfl
     apply (PP _).mp (poly.app ys hys) I hI
