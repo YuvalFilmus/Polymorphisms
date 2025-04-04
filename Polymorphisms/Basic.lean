@@ -102,8 +102,20 @@ def range_1 {n : ℕ} [h : AtLeast2 n] : range n :=
 def range_2 {n : ℕ} [h : AtLeast3 n] : range n :=
   ⟨2, by simp; linarith [h.cond]⟩
 
+instance {n} [AtLeast1 n] : OfNat (range n) 0 :=
+  ⟨range_0⟩
+
+instance {n} [AtLeast2 n] : OfNat (range n) 1 :=
+  ⟨range_1⟩
+
+instance {n} [AtLeast3 n] : OfNat (range n) 2 :=
+  ⟨range_2⟩
+
 def cons_input {a : ℕ} (σ₀ σ₁ : range a) (k : range 2) :=
   if k = range_0 then σ₀ else σ₁
+
+def cons_input' {a : ℕ} (σ₀ σ₁ : range a) (k : range 2) :=
+  if k = 0 then σ₀ else σ₁
 
 lemma of_range_1 (k : range 1) : k = range_0 := by
   obtain ⟨val, prop⟩ := k
@@ -124,6 +136,18 @@ lemma of_range_2' {a} [AtLeast2 a] (ha : a = 2)
 lemma of_range_2 (k : range 2) : k = range_0 ∨ k = range_1 :=
   of_range_2' (rfl) k
 
+lemma of_range_2''' {a} [AtLeast2 a] (ha : a = 2)
+  (k : range a) : k = 0 ∨ k = 1 := by
+  obtain ⟨val, prop⟩ := k
+  replace prop := mem_range.mp prop
+  match val with
+  | 0 => left; rfl
+  | 1 => right; rfl
+  | n+1+1 => exfalso; linarith [prop]
+
+lemma of_range_2'' (k : range 2) : k = 0 ∨ k = 1 :=
+  of_range_2''' (rfl) k
+
 @[simp]
 lemma cons_input_of_components {a : ℕ}
   (x : range 2 → range a) : cons_input (x range_0) (x range_1) = x := by
@@ -132,6 +156,15 @@ lemma cons_input_of_components {a : ℕ}
   all_goals simp [cons_input]
   case inl h => rw [h]; simp
   case inr h => rw [h]; simp [range_0, range_1]
+
+@[simp]
+lemma cons_input_of_components' {a : ℕ}
+  (x : range 2 → range a) : cons_input' (x 0) (x 1) = x := by
+  funext k
+  cases of_range_2'' k
+  all_goals simp [cons_input']
+  case inl h => rw [h]; simp
+  case inr h => rw [h]; simp; aesop
 
 lemma dom_nonempty {pred : Predicate} (c : Certificate pred) :
   ∃ i, i ∈ c.dom := by

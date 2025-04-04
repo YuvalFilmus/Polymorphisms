@@ -64,11 +64,11 @@ def restrict_polymorphism₁ {pred : Predicate} (poly : Polymorphism pred 2)
     let ys i := cons_input (xs i) (y i)
     apply poly.app ys
     intro j
-    cases of_range_2 j
+    cases of_range_2'' j
     case inl hj =>
       simp [ys, hj, cons_input]
       exact sat
     case inr hj =>
-      simp [ys, hj, cons_input, range_0, range_1]
+      simp [ys, hj, cons_input]
       apply Py
 }

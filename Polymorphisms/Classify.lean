@@ -12,11 +12,11 @@ inductive φ_type (a : ℕ)
 | nonconst (σ₁ σ₂ : range a)
 
 def φ_classify (φ : range a → range a) : φ_type a :=
-  let nonequal : Finset _ := { σ | φ σ ≠ φ range_0 }
+  let nonequal : Finset _ := { σ | φ σ ≠ φ 0 }
   if h : nonequal.Nonempty then
-    .nonconst range_0 (min' nonequal h)
+    .nonconst 0 (min' nonequal h)
   else
-    .const (φ range_0)
+    .const (φ 0)
 
 lemma φ_const_spec (φ : range a → range a) (τ : range a) :
   φ_classify φ = .const τ ↔ ∀ σ : range a, φ σ = τ := by
@@ -42,10 +42,10 @@ lemma φ_const_spec (φ : range a → range a) (τ : range a) :
       apply filter_eq_empty_iff.mpr
       push_neg
       intro σ _
-      rw [hφ σ, hφ range_0]
+      rw [hφ σ, hφ 0]
     case isFalse hempty =>
       congr
-      exact hφ range_0
+      exact hφ 0
 
 def φ_const (φ : range a → range a) :=
 match φ_classify φ with
@@ -53,7 +53,7 @@ match φ_classify φ with
 | .nonconst _ _ => false
 
 lemma φ_classify_of_φ_const {φ : range a → range a}
-  (h : φ_const φ = true) : φ_classify φ = .const (φ range_0) := by
+  (h : φ_const φ = true) : φ_classify φ = .const (φ 0) := by
   cases hφ : φ_classify φ
   all_goals simp [φ_const, hφ] at h
   case const τ =>

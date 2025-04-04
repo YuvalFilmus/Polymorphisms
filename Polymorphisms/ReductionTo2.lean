@@ -22,7 +22,7 @@ inductive f_type (a n : ℕ)
 def const_input (σ : range a) (_ : range n) := σ
 
 def f_constant (f : (range n → range a) → range a) :=
-  ∀ x : range n → range a, f x = f (const_input range_0)
+  ∀ x : range n → range a, f x = f (const_input 0)
 
 def φ_of_f (σ : range a) :=
   f (const_input σ)
@@ -32,7 +32,7 @@ def f_dictatorial (j : range n) :=
 
 noncomputable def f_classify : f_type a n :=
   if f_constant f then
-    .const (f (const_input range_0))
+    .const (f (const_input 0))
   else
     let coords : Finset _ := { i | f_dictatorial f i }
     if h : coords.Nonempty then
@@ -55,7 +55,7 @@ lemma f_const_spec (τ : range a) :
   · intro hf
     have fconst : f_constant f := by
       intro x
-      rw [hf x, hf (const_input range_0)]
+      rw [hf x, hf (const_input 0)]
     simp [f_classify, fconst]
     apply hf
 
@@ -92,10 +92,10 @@ lemma f_dictator_spec (f : (range n → range a) → range a)
         apply hnonconst
         simp [f_constant]
         intro x
-        rw [hf x, hf (const_input range_0)]
+        rw [hf x, hf (const_input 0)]
         simp [const_input]
         have := (φ_const_spec φ τ).mp hφ
-        rw [this (x j), this range_0]
+        rw [this (x j), this 0]
       | nonconst σ₁ σ₂ =>
         use σ₁, σ₂
   · rintro ⟨hf, hφ⟩
@@ -151,7 +151,7 @@ lemma f_dictator_spec (f : (range n → range a) → range a)
 lemma f_const_or_dictator
   {f : (range n → range a) → range a} {φ : range a → range a} {j : range n}
   (hf : ∀ x, f x = φ (x j)) :
-  (φ_classify φ = .const (φ range_0) ∧ f_classify f = .const (φ range_0)) ∨
+  (φ_classify φ = .const (φ 0) ∧ f_classify f = .const (φ 0)) ∨
   ((∃ σ₁ σ₂, φ_classify φ = .nonconst σ₁ σ₂) ∧ f_classify f = .dictator j φ) := by
   cases hφ : φ_classify φ
   case const τ =>
@@ -159,10 +159,10 @@ lemma f_const_or_dictator
     left
     constructor
     · congr
-      rw [hφ range_0]
+      rw [hφ 0]
     · apply (f_const_spec _ _).mpr
       intro x
-      rw [hf x, hφ (x j), hφ range_0]
+      rw [hf x, hφ (x j), hφ 0]
   case nonconst σ₁ σ₂ =>
     right
     constructor
@@ -196,8 +196,8 @@ lemma h_constant {poly : Polymorphism pred (n+1)} {i : range pred.m}
     case const τ' =>
       simp [h_func, hf] at h
       have hτ' : τ' = τ := calc
-        τ' = (fun (_ : range (pred.a i)) => τ') range_0 := rfl
-        _  = (fun (_ : range (pred.a i)) => τ ) range_0 := by rw [h]
+        τ' = (fun (_ : range (pred.a i)) => τ') 0 := rfl
+        _  = (fun (_ : range (pred.a i)) => τ ) 0 := by rw [h]
         _ = τ := rfl
       rw [hτ'] at hf
       apply (f_const_spec _ τ).mp
@@ -232,9 +232,9 @@ lemma h_dictatorial {poly : Polymorphism pred (n+1)} {i : range pred.m}
 noncomputable def j_coord [AtLeast1 n] (poly : Polymorphism pred (n+1)) (i : range pred.m)
   (σ : range (pred.a i)) : range n :=
   match f_classify (fun x => poly.fs i (extend_input_by x σ)) with
-  | .const _ => range_0
+  | .const _ => 0
   | .dictator j _ => j
-  | .other => range_0
+  | .other => 0
 
 lemma f_of_h_some_nonconst [AtLeast1 n] {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {σ : range (pred.a i)} {φ : range (pred.a i) → range (pred.a i)}
@@ -272,11 +272,11 @@ variable {a : ℕ} [AtLeast2 a]
 def other_func (φ : Option (range a → range a)) (σ : range a) : range a :=
   match φ with
   | some ψ =>
-    if ψ range_0 = range_0 then
-      if σ = range_0 then
-        range_1
+    if ψ 0 = 0 then
+      if σ = 0 then
+        1
       else
-        range_0
+        0
     else
       σ
   | none => σ
@@ -284,53 +284,56 @@ def other_func (φ : Option (range a → range a)) (σ : range a) : range a :=
 lemma other_func_different (φ : range a → range a) :
   φ ≠ other_func (some φ) := by
   by_contra h
-  suffices h' : φ range_0 ≠ other_func (some φ) range_0 by
+  suffices h' : φ 0 ≠ other_func (some φ) 0 by
     apply h'
     rw [←h]
   simp [other_func]
   split
   case isTrue hψ =>
     rw [hψ]
-    simp [range_0, range_1]
+    exact ne_of_beq_false rfl
   case isFalse hψ =>
     assumption
 
 lemma other_func_ne_const (φ : Option (range a → range a)) (τ : range a) :
   ¬ other_func φ = fun _ => τ := by
-  suffices h : other_func φ range_0 ≠ other_func φ range_1 by
+  suffices h : other_func φ 0 ≠ other_func φ 1 by
     contrapose! h
     simp [h]
   simp [other_func]
   split
   split
-  all_goals simp [range_0, range_1]
+  all_goals exact ne_of_beq_false rfl
 
 def dummy₀ (σ : range a) : range a := σ
 
 def dummy₁ (σ : range a) : range a :=
-  if σ = range_0 then
-    range_1
+  if σ = 0 then
+    1
   else
-    range_0
+    0
 
 lemma dummy_different (a : ℕ) [AtLeast2 a] : @dummy₀ a ≠ dummy₁ := by
   by_contra h
-  have : @dummy₀ a range_1 ≠ dummy₁ range_1 := by
-    simp [dummy₀, dummy₁, range_0, range_1]
+  have : @dummy₀ a 1 ≠ dummy₁ 1 := by
+    simp [dummy₀, dummy₁]
+    exact ne_of_beq_false rfl
   apply this
   rw [h]
 
 lemma dummy₀_ne_const {a : ℕ} [AtLeast2 a] (τ : range a) : dummy₀ ≠ fun _ => τ := by
-  suffices h : dummy₀ range_0 ≠ dummy₀ range_1 by
+  suffices h : dummy₀ 0 ≠ dummy₀ 1 by
     contrapose! h
     rw [h]
-  simp [dummy₀, range_0, range_1]
+  simp [dummy₀]
+  exact ne_of_beq_false rfl
 
 lemma dummy₁_ne_const {a : ℕ} [AtLeast2 a] (τ : range a) : dummy₁ ≠ fun _ => τ := by
-  suffices h : dummy₁ range_0 ≠ dummy₁ range_1 by
+  suffices h : dummy₁ 0 ≠ dummy₁ 1 by
     contrapose! h
     rw [h]
-  simp [dummy₁, range_0, range_1]
+  simp [dummy₁]
+  exact ne_of_beq_false rfl
 
 noncomputable def g'_func (poly : Polymorphism pred (n+1)) (i : range pred.m)
   (σ : range (pred.a i)) : (range (pred.a i) → range (pred.a i)) :=
@@ -343,14 +346,14 @@ noncomputable def g'_func (poly : Polymorphism pred (n+1)) (i : range pred.m)
       let σ₀ := min' defined hnonempty
       other_func (h σ₀)
     else
-      if σ = range_0 then
+      if σ = 0 then
         dummy₀
       else
         dummy₁
 
 noncomputable def g_func (poly : Polymorphism pred (n+1)) (i : range pred.m)
   (x : range 2 → range (pred.a i)) : range (pred.a i) :=
-  g'_func poly i (x range_0) (x range_1)
+  g'_func poly i (x 0) (x 1)
 
 lemma g'_of_some_φ {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)} {σ : range (pred.a i)}
@@ -360,8 +363,8 @@ lemma g'_of_some_φ {poly : Polymorphism pred (n+1)} {i : range pred.m}
 
 lemma g_of_some_φ {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)} (x : range 2 → range (pred.a i))
-  (h : h_func poly i (x range_0) = some φ) :
-  g_func poly i x = φ (x range_1) := by
+  (h : h_func poly i (x 0) = some φ) :
+  g_func poly i x = φ (x 1) := by
   simp [g_func, g'_func, h]
 
 lemma h_of_g' {poly : Polymorphism pred (n+1)} {i : range pred.m}
@@ -378,7 +381,7 @@ noncomputable def g_polymorphism (poly : Polymorphism pred (n+1))
 {
   fs := g_func poly,
   app xs sat := by
-    let rest := restrict_polymorphism poly (sat range_0)
+    let rest := restrict_polymorphism poly (sat 0)
     cases hind rest
     case _ hdictatorship =>
       obtain ⟨j, φ, hφ, hf⟩ := hdictatorship
@@ -386,7 +389,7 @@ noncomputable def g_polymorphism (poly : Polymorphism pred (n+1))
       have hg i := g_of_some_φ (xs i) (hh i)
       conv => congr; ext i; rw [hg i]
       let ys i (j : range (n+1)) :=
-        if j < range_last then xs i range_1 else xs i range_0
+        if j < range_last then xs i 1 else xs i 0
       have Pys := poly.app ys ?_
       case refine_1 =>
         intro j
@@ -394,7 +397,7 @@ noncomputable def g_polymorphism (poly : Polymorphism pred (n+1))
         all_goals simp [ys, hj]; apply sat
       convert Pys with i
       calc
-        φ i (xs i range_1) = φ i (ys i (extend_index (by omega) j)) := by
+        φ i (xs i 1) = φ i (ys i (extend_index (by omega) j)) := by
           simp [ys, extend_index, range_last, mem_range.mp j.coe_prop]
         _ = rest.fs i (shorten_input (ys i)) := by
           symm
@@ -402,7 +405,7 @@ noncomputable def g_polymorphism (poly : Polymorphism pred (n+1))
         _ = poly.fs i (ys i) := by
           simp [rest, restrict_polymorphism]
           congr
-          have : ys i (range_last) = xs i range_0 := by
+          have : ys i (range_last) = xs i 0 := by
             simp [ys]
           rw [←this]
           simp
@@ -449,13 +452,13 @@ lemma g'_const {poly : Polymorphism pred (n+1)} {i : range pred.m}
 
 lemma g_dictator_0 {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)}
-  (hdictator : ∀ x, g_func poly i x = φ (x range_0)) :
+  (hdictator : ∀ x, g_func poly i x = φ (x 0)) :
   ∀ x, poly.fs i x = φ (x range_last) := by
   intro x
   let σ := x range_last
   have : g'_func poly i σ = fun _ => φ σ := by
     funext τ
-    apply hdictator (cons_input σ τ)
+    apply hdictator (cons_input' σ τ)
   replace := g'_const this
   replace := h_constant.mp this (shorten_input x)
   simp [σ] at this
@@ -464,12 +467,12 @@ lemma g_dictator_0 {poly : Polymorphism pred (n+1)} {i : range pred.m}
 lemma g_dictator_1_const {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)}
   (hφ : φ_const φ = true)
-  (hdictator : ∀ x, g_func poly i x = φ (x range_1)) :
-  ∀ x, poly.fs i x = φ range_0 := by
+  (hdictator : ∀ x, g_func poly i x = φ (x 1)) :
+  ∀ x, poly.fs i x = φ 0 := by
   replace hφ := φ_classify_of_φ_const hφ
-  let τ := φ range_0
+  let τ := φ 0
   let ψ (_ : range (pred.a i)) := τ
-  have : ∀ x, g_func poly i x = ψ (x range_0) := by
+  have : ∀ x, g_func poly i x = ψ (x 0) := by
     intro x
     rw [hdictator x, (φ_const_spec φ τ).mp hφ]
   have := g_dictator_0 this
@@ -479,12 +482,12 @@ lemma g_dictator_1_const {poly : Polymorphism pred (n+1)} {i : range pred.m}
 lemma g_dictator_1_nonconst [AtLeast1 n] {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)}
   (hφ : φ_const φ = false)
-  (hdictator : ∀ x, g_func poly i x = φ (x range_1)) (σ : range (pred.a i)) :
+  (hdictator : ∀ x, g_func poly i x = φ (x 1)) (σ : range (pred.a i)) :
   ∀ x, poly.fs i (extend_input_by x σ) = φ (x (j_coord poly i σ)) := by
   have hg' : ∀ σ, g'_func poly i σ = φ := by
     intro σ
     funext τ
-    apply hdictator (cons_input σ τ)
+    apply hdictator (cons_input' σ τ)
   have hh : h_func poly i σ = some φ := by
     cases h_of_g' (hg' σ)
     case inl => assumption
@@ -523,18 +526,19 @@ lemma g_dictator_1_nonconst [AtLeast1 n] {poly : Polymorphism pred (n+1)} {i : r
               simp [h']
           apply hempty
           simp
-        have hg'_0 := hg' range_0
-        have hg'_1 := hg' range_1
-        simp [g'_func, hnone range_0, hempty] at hg'_0
-        simp [g'_func, hnone range_1, hempty] at hg'_1
-        simp [range_0, range_1] at hg'_1
+        have hg'_0 := hg' 0
+        have hg'_1 := hg' 1
+        simp [g'_func, hnone 0, hempty] at hg'_0
+        simp [g'_func, hnone 1, hempty] at hg'_1
+        split at hg'_1
+        case isTrue h => reduce at h; simp at h
         rw [hg'_0, hg'_1]
   apply f_of_h_nonconst hφ hh
 
 lemma g_dictator_1_nonconst' [AtLeast1 n] {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)}
   (hφ : φ_const φ = false)
-  (hdictator : ∀ x, g_func poly i x = φ (x range_1)) :
+  (hdictator : ∀ x, g_func poly i x = φ (x 1)) :
   ∀ x, poly.fs i x = φ ((shorten_input x) (j_coord poly i (x range_last))) := by
   intro x
   convert g_dictator_1_nonconst hφ hdictator (x range_last) (shorten_input x)
@@ -544,7 +548,7 @@ def const_vector {i : range pred.m} (σ : range (pred.a i)) {len : ℕ} (_ : ran
 
 lemma g_dictator_1 [AtLeast1 n] {poly : Polymorphism pred (n+1)} {i : range pred.m}
   {φ : range (pred.a i) → range (pred.a i)}
-  (hdictator : ∀ x, g_func poly i x = φ (x range_1)) σ :
+  (hdictator : ∀ x, g_func poly i x = φ (x 1)) σ :
   poly.fs i (const_vector σ) = φ σ := by
   by_cases hφ : φ_const φ
   · rw [g_dictator_1_const hφ hdictator (const_vector σ)]
@@ -563,7 +567,7 @@ variable {htrivial : trivial_for pred Φ n}
 
 lemma trivial_of_trivial_induction_dictatorship_0
   (φ : format pred) (φ_in_Φ : φ ∈ Φ)
-  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x range_0)) :
+  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x 0)) :
   is_dictatorship poly Φ := by
   let g := g_polymorphism poly htrivial
   use range_last, φ, φ_in_Φ
@@ -577,7 +581,7 @@ lemma trivial_of_trivial_induction_certificate (c : Certificate pred)
   use c
   intro i
   let φ (_ : range (pred.a i)) := c.ρ i
-  replace hc : ∀ x, g.fs i x = φ (x range_0) := hc i
+  replace hc : ∀ x, g.fs i x = φ (x 0) := hc i
   apply g_dictator_0 hc
 
 def nonconst_coords (φ : format pred) : Finset (range pred.m) :=
@@ -592,7 +596,7 @@ def nonconst_coords_nonempty_of_not_same [AtLeast1 n] {φ : format pred} {poly :
   by_contra A_Empty
   replace A_Empty := not_nonempty_iff_eq_empty.mp A_Empty
   apply hnotsame
-  use range_0
+  use 0
   intro i
   exfalso
   rw [A_Empty] at i
@@ -601,15 +605,15 @@ def nonconst_coords_nonempty_of_not_same [AtLeast1 n] {φ : format pred} {poly :
 
 lemma trivial_of_trivial_induction_dictatorship_1_same [AtLeast1 n]
   (φ : format pred) (φ_in_Φ : φ ∈ Φ)
-  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x range_1))
+  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x 1))
   (hsame : nonconst_coords_same φ poly) :
   is_dictatorship poly Φ := by
   let A := nonconst_coords φ
   let j :=
     if hnonempty : A.Nonempty then
-      j_coord poly (min' A hnonempty) range_0
+      j_coord poly (min' A hnonempty) 0
     else
-      range_0
+      0
   replace hj : ∀ i : A, ∀ σ, j_coord poly i σ = j := by
     by_cases hA : A.Nonempty
     case pos =>
@@ -617,7 +621,7 @@ lemma trivial_of_trivial_induction_dictatorship_1_same [AtLeast1 n]
       convert hj'
       simp [j, hA]
       let i : A := ⟨min' A hA, ?_⟩
-      apply hj' i range_0
+      apply hj' i 0
       exact min'_mem A hA
     case neg =>
       have := not_nonempty_iff_eq_empty.mp hA
@@ -670,7 +674,7 @@ lemma exists_bad_y_or_all_y_good [AtLeast1 n] (φ : format pred) (poly : Polymor
   | 0 =>
     have := card_eq_zero.mp hcard'
     have := image_eq_empty.mp this
-    use range_0
+    use 0
     intro i
     rw [this] at i
     exfalso
@@ -708,7 +712,7 @@ lemma other_diff {type type' : Type} (σ : type') {τ₁ τ₂ : type} (f : type
 
 lemma trivial_of_trivial_induction_dictatorship_1_exists_bad_y [AtLeast1 n]
   (φ : format pred)
-  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x range_1))
+  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x 1))
   (hbad : exists_bad_y φ poly) :
   is_certificate poly := by
   obtain ⟨y, Py, hy⟩ := hbad
@@ -721,9 +725,9 @@ lemma trivial_of_trivial_induction_dictatorship_1_exists_bad_y [AtLeast1 n]
     have hφconst : φ_const (φ i) = false := (mem_filter.mp hi).2
     obtain ⟨σ₁, σ₂, hφ⟩ := φ_classify_of_not_φ_const hφconst
     replace hφ := φ_nonconst_spec hφ
-    let σ := other (φ' i range_0) σ₁ σ₂ (φ i ·)
-    let x k := if k = j then range_0 else σ
-    have xj : x j = range_0 := by simp [x]
+    let σ := other (φ' i 0) σ₁ σ₂ (φ i ·)
+    let x k := if k = j then 0 else σ
+    have xj : x j = 0 := by simp [x]
     have xj' : x j' = σ := by simp [x, j_ne_j']
     have fx := hdictator i x
     have fx' := g_dictator_1_nonconst hφconst (hdict i) (y i) x
@@ -734,7 +738,7 @@ lemma trivial_of_trivial_induction_dictatorship_1_exists_bad_y [AtLeast1 n]
     rw [fx] at fx'
     simp [σ] at fx'
     exfalso
-    apply other_diff (φ' i range_0) (φ i ·) hφ
+    apply other_diff (φ' i 0) (φ i ·) hφ
     symm
     assumption
   case inr hc =>
@@ -759,10 +763,10 @@ lemma trivial_of_trivial_induction_dictatorship_1_exists_bad_y [AtLeast1 n]
       apply other_diff (c.ρ i) (φ i ·) hφ
       symm
       assumption
-    replace hconst' : ∀ i : c.dom, φ i (range_0) = c.ρ i := by
+    replace hconst' : ∀ i : c.dom, φ i (0) = c.ρ i := by
       intro i
       have hφ := φ_classify_of_φ_const (hconst i)
-      let x (j : range n) : range (pred.a i) := range_0
+      let x (j : range n) : range (pred.a i) := 0
       have fx := hc i x
       have fx' := g_dictator_1_const (hconst i) (hdict i) (extend_input_by x (y i))
       rw [←fx, ←fx']
@@ -776,7 +780,7 @@ lemma trivial_of_trivial_induction_dictatorship_1_exists_bad_y [AtLeast1 n]
 lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
   (φ : format pred)
   (base_case : trivial_for pred Φ 2)
-  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x range_1))
+  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x 1))
   (hnotsame : ¬nonconst_coords_same φ poly)
   (hgood : all_y_good φ poly) :
   is_certificate poly := by
@@ -784,7 +788,7 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
     j_coord poly i₁ (y i₁) = j_coord poly i₂ (y i₂) := by
     obtain ⟨j, hj⟩ := hgood Py
     rw [hj i₁, hj i₂]
-  obtain ⟨y₀, Py₀, _⟩ := pred.full range_0 range_0
+  obtain ⟨y₀, Py₀, _⟩ := pred.full 0 0
   obtain ⟨j₀, hj₀⟩ := hgood Py₀
   obtain ⟨i₀, hi₀⟩ := (nonconst_coords_nonempty_of_not_same hnotsame).exists_mem
   replace i₀ : nonconst_coords φ := ⟨i₀, hi₀⟩
@@ -846,14 +850,14 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
   {
     fs i x :=
       if hi : i ∈ nonconst_coords φ then
-        if x range_0 ∈ A₀ ⟨i, hi⟩ then
-          φ i (x range_0)
+        if x 0 ∈ A₀ ⟨i, hi⟩ then
+          φ i (x 0)
         else
-          φ i (x range_1)
+          φ i (x 1)
       else
-        φ i range_0
+        φ i 0
     app xs sat := by
-      have hsimp i j : (if i ∈ nonconst_coords φ then φ i (xs i j) else φ i range_0) = φ i (xs i j) := by
+      have hsimp i j : (if i ∈ nonconst_coords φ then φ i (xs i j) else φ i 0) = φ i (xs i j) := by
         split
         case isTrue => rfl
         case isFalse hconst =>
@@ -864,7 +868,7 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
           apply mem_filter.mpr
           constructor; simp
           exact eq_false_of_ne_true hconst
-      cases h : same_type (sat range_0)
+      cases h : same_type (sat 0)
       all_goals simp [*]
   }
   cases base_case χ
@@ -875,34 +879,40 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
     replace hσ₁σ₂ := φ_nonconst_spec hσ₁σ₂
     obtain ⟨z₁, Pz₁, hz₁⟩ := pred.full i₀ σ₁
     obtain ⟨z₂, Pz₂, hz₂⟩ := pred.full i₀ σ₂
-    have χ₀₁ := hχ (cons_input (y₀ i₀) (z₁ i₀))
-    have χ₀₂ := hχ (cons_input (y₀ i₀) (z₂ i₀))
-    have χ₁₁ := hχ (cons_input (y₁ i₀) (z₁ i₀))
-    have χ₁₂ := hχ (cons_input (y₁ i₀) (z₂ i₀))
-    simp [χ, cons_input, range_0, range_1, A₀_nonempty i₀] at χ₀₁
-    simp [χ, cons_input, range_0, range_1, A₀_nonempty i₀] at χ₀₂
-    simp [χ, cons_input, range_0, range_1, A₀_nonfull i₀] at χ₁₁
-    simp [χ, cons_input, range_0, range_1, A₀_nonfull i₀] at χ₁₂
+    have χ₀₁ := hχ (cons_input' (y₀ i₀) (z₁ i₀))
+    have χ₀₂ := hχ (cons_input' (y₀ i₀) (z₂ i₀))
+    have χ₁₁ := hχ (cons_input' (y₁ i₀) (z₁ i₀))
+    have χ₁₂ := hχ (cons_input' (y₁ i₀) (z₂ i₀))
+    simp [χ, cons_input', A₀_nonempty i₀] at χ₀₁
+    simp [χ, cons_input', A₀_nonempty i₀] at χ₀₂
+    simp [χ, cons_input', A₀_nonfull i₀] at χ₁₁
+    simp [χ, cons_input', A₀_nonfull i₀] at χ₁₂
     exfalso
-    cases of_range_2 j
+    cases of_range_2'' j
     case inl hj =>
       simp [hj] at hχ
-      simp [hj, range_0, hz₁] at χ₁₁
-      simp [hj, range_0, hz₂] at χ₁₂
+      simp [hj, hz₁] at χ₁₁
+      simp [hj, hz₂] at χ₁₂
+      reduce at χ₁₁
+      reduce at χ₁₂
       apply hσ₁σ₂
       rw [χ₁₁, χ₁₂]
     case inr hj =>
       simp [hj] at hχ
-      simp [hj, range_1, hz₁] at χ₀₁
-      simp [hj, range_1, hz₂] at χ₀₂
-      simp [hj, range_1, hz₁] at χ₁₁
-      simp [hj, range_1, hz₂] at χ₁₂
+      simp [hj, hz₁] at χ₀₁
+      simp [hj, hz₂] at χ₀₂
+      simp [hj, hz₁] at χ₁₁
+      simp [hj, hz₂] at χ₁₂
       by_cases h : φ i₀ (y₀ i₀) = φ i₀ σ₁
       · apply hσ₁σ₂
         rw [h] at χ₀₂
+        reduce at χ₁₂
         rw [χ₀₂, χ₁₂]
+        reduce; rfl
       · apply h
+        reduce at χ₁₁
         rw [χ₀₁, χ₁₁]
+        reduce; rfl
   case inr hχ =>
     rcases hχ with ⟨c, hc⟩
     use c
@@ -917,21 +927,22 @@ lemma trivial_of_trivial_induction_dictatorship_1_all_y_good [AtLeast1 n]
       apply φ_nonconst_spec hσ₁σ₂
       obtain ⟨z₁, Pz₁, hz₁⟩ := pred.full i σ₁
       obtain ⟨z₂, Pz₂, hz₂⟩ := pred.full i σ₂
-      have χ₁ := hc i (cons_input (y₁ i) (z₁ i))
-      have χ₂ := hc i (cons_input (y₁ i) (z₂ i))
-      simp [χ, cons_input, hnonconst', range_0, range_1, A₀_nonfull ⟨i, hnonconst'⟩, hz₁] at χ₁
-      simp [χ, cons_input, hnonconst', range_0, range_1, A₀_nonfull ⟨i, hnonconst'⟩, hz₂] at χ₂
+      have χ₁ := hc i (cons_input' (y₁ i) (z₁ i))
+      have χ₂ := hc i (cons_input' (y₁ i) (z₂ i))
+      simp [χ, cons_input', hnonconst', A₀_nonfull ⟨i, hnonconst'⟩, hz₁] at χ₁
+      simp [χ, cons_input', hnonconst', A₀_nonfull ⟨i, hnonconst'⟩, hz₂] at χ₂
+      reduce at χ₁ χ₂
       rw [χ₁, χ₂]
     convert g_dictator_1_const hconst (hdict i)
-    rw [←hc i (cons_input (y₀ i) (y₀ i))]
-    simp [χ, cons_input]
+    rw [←hc i (cons_input' (y₀ i) (y₀ i))]
+    simp [χ, cons_input']
     intro h
     simp [nonconst_coords, hconst] at h
 
 lemma trivial_of_trivial_induction_dictatorship_1 [AtLeast1 n]
   (φ : format pred) (φ_in_Φ : φ ∈ Φ)
   (base_case : trivial_for pred Φ 2)
-  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x range_1)) :
+  (hdict : ∀ i x, (g_polymorphism poly htrivial).fs i x = φ i (x 1)) :
   is_dictatorship poly Φ ∨ is_certificate poly := by
   by_cases hsame : ∃ j, ∀ i : nonconst_coords φ, ∀ σ, j_coord poly i σ = j
   · left
@@ -948,7 +959,7 @@ lemma trivial_of_trivial_induction [AtLeast1 n]
   cases base_case (g_polymorphism poly htrivial)
   case inl g_is_dictatorship =>
     obtain ⟨j, φ, ⟨φ_in_Φ, g_is_dictatorship⟩⟩ := g_is_dictatorship
-    cases of_range_2 j
+    cases of_range_2'' j
     case inl j_0 =>
       rw [j_0] at g_is_dictatorship
       left

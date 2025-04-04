@@ -13,7 +13,7 @@ def extend_input {i : range pred.m} (x : range n₁ → range (pred.a i)) (j : r
   if hj : j < n₁ then
     x ⟨j, by simp [hj]⟩
   else
-    range_0
+    0
 
 -- extend an index
 def extend_index (j : range n₁) : range n₂ :=
@@ -49,7 +49,7 @@ def extend_polymorphism (P : Polymorphism pred n₁) : Polymorphism pred n₂ :=
 -- predicate is non-empty
 def predicate_nonempty :
   ∃ y, pred.P y := by
-  rcases pred.dep range_0 with ⟨x, y, Px, _, _⟩
+  rcases pred.dep 0 with ⟨x, y, Px, _, _⟩
   use x
 
 theorem trivial_of_trivial_larger (trivial : trivial_for pred Φ n₂) (hn : n₁ ≤ n₂):
@@ -68,12 +68,12 @@ theorem trivial_of_trivial_larger (trivial : trivial_for pred Φ n₂) (hn : n�
       rw [←this]
     -- if j ≥ n then all functions are constant, so we are actually a certificate
     · right
-      let ρ (i : range pred.m) := φ i range_0
+      let ρ (i : range pred.m) := φ i 0
       have hconst (i : range pred.m) (x : range n₁ → range (pred.a i)) :
         P.fs i x = ρ i := by
         calc
           P.fs i x = (extend_polymorphism hn P).fs i (extend_input x) := by simp
-          _ = φ i range_0 := by
+          _ = φ i 0 := by
             rw [conforms i (extend_input x)]
             congr
             simp [extend_input, hj]
