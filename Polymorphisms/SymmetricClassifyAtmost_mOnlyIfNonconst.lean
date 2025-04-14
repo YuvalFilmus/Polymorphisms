@@ -134,10 +134,10 @@ lemma other_ix' {α} [DecidableEq α] {I : Finset α} (hI : #I ≥ 3) (i₀ i₁
     case inl h => subst h; simp
     case inr h => subst h; simp
   have h := this.exists_mem
-  have := h.choose_spec
-  simp at this
-  obtain ⟨hmem, hi₀, hi₁⟩ := this
-  use ⟨h.choose, hmem⟩
+  choose i₂ hi₂ using h
+  simp at hi₂
+  obtain ⟨hmem, hi₀, hi₁⟩ := hi₂
+  use ⟨i₂, hmem⟩
   constructor
   · contrapose! hi₀
     apply exists_subtype_mk_eq_iff.mp

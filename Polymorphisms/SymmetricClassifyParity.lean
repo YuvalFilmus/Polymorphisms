@@ -2,10 +2,8 @@ import Polymorphisms.SymmetricClassify
 import Polymorphisms.SymmetricClassifyAux
 open Finset
 
-namespace Nat.ModEq
-
 -- is this really not in Mathlib?
-lemma sum {α} [DecidableEq α] {s : Finset α} {f g : α → ℕ} {m} (h : ∀ x ∈ s, f x ≡ g x [MOD m]) :
+lemma Nat.ModEq.sum {α} [DecidableEq α] {s : Finset α} {f g : α → ℕ} {m} (h : ∀ x ∈ s, f x ≡ g x [MOD m]) :
   ∑ x ∈ s, f x ≡ ∑ x ∈ s, g x [MOD m] := by
   induction s using Finset.induction
   case empty =>
@@ -21,8 +19,6 @@ lemma sum {α} [DecidableEq α] {s : Finset α} {f g : α → ℕ} {m} (h : ∀ 
       apply h
       apply mem_insert_of_mem
       exact hx
-
-end Nat.ModEq
 
 namespace NontrivialType
 
